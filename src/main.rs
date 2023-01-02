@@ -13,6 +13,7 @@ pub mod d_19;
 pub mod d_20;
 pub mod d_21;
 pub mod d_22;
+pub mod d_23;
 pub mod d_3;
 pub mod d_4;
 pub mod d_5;
@@ -42,6 +43,7 @@ fn main() {
         "20" => d_20::main(),
         "21" => d_21::main(),
         "22" => d_22::main(),
+        "23" => d_23::main(),
         _ => println!("I don't know what to say!"),
     }
 }
