@@ -1,21 +1,6 @@
 use std::collections::HashSet;
-use std::io;
+use std::time::SystemTime;
 pub mod input;
-
-const EXAMPLE: &str = "
-..............
-..............
-.......#......
-.....###.#....
-...#...#.#....
-....#...##....
-...#.###......
-...##.#.##....
-....#..#......
-..............
-..............
-..............
-";
 
 #[derive(Debug, Clone, Copy)]
 enum Dir {
@@ -25,10 +10,7 @@ enum Dir {
     E,
 }
 
-const ROUNDS: usize = 10;
-
 fn get_elves() -> HashSet<(isize, isize)> {
-    //let input = EXAMPLE;
     let input = input::INPUT;
     let mut elves = HashSet::new();
     for (y, line) in input.lines().filter(|l| !l.is_empty()).enumerate() {
@@ -39,24 +21,6 @@ fn get_elves() -> HashSet<(isize, isize)> {
         }
     }
     elves
-}
-
-fn print_elves(elves: &HashSet<(isize, isize)>) {
-    let min_x = elves.iter().map(|(x, _)| x).min().unwrap();
-    let min_y = elves.iter().map(|(_, y)| y).min().unwrap();
-    let max_x = elves.iter().map(|(x, _)| x).max().unwrap();
-    let max_y = elves.iter().map(|(_, y)| y).max().unwrap();
-
-    let mut grid = vec![vec!['.'; (max_x - min_x + 1) as usize]; (max_y - min_y + 1) as usize];
-    let regions_count = (max_x - min_x + 1) * (max_y - min_y + 1);
-
-    for elf in elves {
-        grid[(elf.1 - min_y) as usize][(elf.0 - min_x) as usize] = '#';
-    }
-    for line in grid {
-        println!("{}", line.iter().collect::<String>());
-    }
-    println!("{} empty regions", regions_count - elves.len() as isize);
 }
 
 fn get_dirs(dir: &Dir) -> [Dir; 4] {
@@ -138,10 +102,12 @@ fn get_is_alone(elves: &HashSet<(isize, isize)>, x: &isize, y: &isize) -> bool {
 }
 
 pub fn main() {
+    let now = SystemTime::now();
     let mut elves = get_elves();
-    print_elves(&elves);
+    //print_elves(&elves);
 
-    for round in 0..ROUNDS {
+    'round: for round in 0..1100 {
+        let mut new_elves = elves.clone();
         let dir = match round % 4 {
             0 => Dir::N,
             1 => Dir::S,
@@ -150,30 +116,27 @@ pub fn main() {
             _ => unreachable!(),
         };
 
-        // PHASE 0
-        let mut buffer = String::new();
-        let stdin = io::stdin(); // We get `Stdin` here.
-        stdin.read_line(&mut buffer);
-
         // PHASE 1
         let mut intentions = Vec::new();
         for (x, y) in &elves {
-            let mut intention = (*x, *y, *x, *y);
             let is_alone = get_is_alone(&elves, x, y);
 
             if !is_alone {
                 let dirs = get_dirs(&dir);
                 let (next_x, next_y) = get_next(&elves, dirs, x, y);
-                intention = (next_x, next_y, *x, *y);
+                let intention = (next_x, next_y, *x, *y);
+                intentions.push(intention);
             }
-
-            intentions.push(intention);
         }
 
         // PHASE 2
         intentions.sort();
         for i in 0..intentions.len() {
             let current = intentions[i];
+
+            if (current.0, current.1) == (current.2, current.3) {
+                continue;
+            }
 
             if i > 1 {
                 let p = intentions.get(i - 1).unwrap();
@@ -188,11 +151,27 @@ pub fn main() {
                 }
             }
 
-            elves.remove(&(current.2, current.3));
-            elves.insert((current.0, current.1));
+            match elves.get(&(current.0, current.1)) {
+                None => {}
+                Some(pos) => {
+                    println!("ALERT {} {}", pos.0, pos.1);
+                    break 'round;
+                }
+            }
+
+            new_elves.remove(&(current.2, current.3));
+            new_elves.insert((current.0, current.1));
         }
 
-        println!("Round {}", round + 1);
-        print_elves(&elves);
+        let time = now.elapsed().unwrap().as_secs();
+        if round % 100 == 0 {
+            println!("Round {}: time {}", round + 1, time);
+        }
+
+        if elves == new_elves {
+            println!("Round {}: time {}", round + 1, time);
+            break;
+        }
+        elves = new_elves;
     }
 }
