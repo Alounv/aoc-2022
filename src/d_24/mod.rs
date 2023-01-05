@@ -1,8 +1,8 @@
 pub mod input;
 use colored::Colorize;
 use std::collections::{HashMap, HashSet};
-use std::io::stdin;
 
+/*
 const EXAMPLE: &str = "
 #.######
 #>>.<^<#
@@ -11,6 +11,7 @@ const EXAMPLE: &str = "
 #<^v^^>#
 ######.#
 ";
+*/
 
 fn get_initial_map() -> Vec<Vec<char>> {
     let mut blizzard = Vec::new();
@@ -191,7 +192,7 @@ pub fn main() {
 
     print_map(&map, &water);
 
-    for i in 1..400 {
+    for i in 1..1200 {
         clean_previous_print(&map);
         //stdin().read_line(&mut String::new()).unwrap();
 
@@ -211,7 +212,7 @@ pub fn main() {
             end = new_end;
             start = new_start;
 
-            println!("Phase {} {:?} {:?}", phase, end, start);
+            println!();
 
             if phase == 3 {
                 break;
