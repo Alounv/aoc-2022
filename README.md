@@ -1,3 +1,3 @@
-# AdventOfCode2022
+# Advent of code - 2022
 
-My crapy solutions for AdventOfCode2022
+My crapy solutions for Advent of code 2022
